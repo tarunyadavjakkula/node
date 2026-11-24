@@ -1,116 +1,37 @@
-// View Students
-function loadStudents() {
+const val = id => document.getElementById(id).value;
 
+function send(url, method, body) {
+    fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: body ? JSON.stringify(body) : null
+    })
+        .then(res => res.json())
+        .then(data => { alert(data.message); loadStudents(); });
+}
+
+function loadStudents() {
     fetch("/api/students")
         .then(res => res.json())
         .then(data => {
-
-            let table = document.getElementById("studentTable");
-
-            table.innerHTML = "";
-
-            data.forEach(student => {
-
-                table.innerHTML += `
-                    <tr>
-                        <td>${student.id}</td>
-                        <td>${student.name}</td>
-                        <td>${student.age}</td>
-                        <td>${student.course}</td>
-                        <td>
-                            <button onclick="deleteStudent(${student.id})">
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
-                `;
-
-            });
+            studentTable.innerHTML = data.map(s => `
+        <tr>
+          <td>${s.id}</td><td>${s.name}</td><td>${s.age}</td><td>${s.course}</td>
+          <td><button onclick="deleteStudent(${s.id})">Delete</button></td>
+        </tr>`).join("");
         });
 }
 
-
-// Add Student
 function addStudent() {
-
-    let student = {
-        id: Number(document.getElementById("id").value),
-        name: document.getElementById("name").value,
-        age: Number(document.getElementById("age").value),
-        course: document.getElementById("course").value
-    };
-
-    fetch("/api/students", {
-
-        method: "POST",
-
-        headers: {
-            "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify(student)
-
-    })
-    .then(res => res.json())
-    .then(data => {
-
-        alert(data.message);
-        loadStudents();
-
-    });
+    send("/api/students", "POST", { id: Number(val("id")), name: val("name"), age: Number(val("age")), course: val("course") });
 }
 
-
-// Update Student
 function updateStudent() {
-
-    let id = document.getElementById("id").value;
-
-    let student = {
-        name: document.getElementById("name").value,
-        age: Number(document.getElementById("age").value),
-        course: document.getElementById("course").value
-    };
-
-    fetch("/api/students/" + id, {
-
-        method: "PUT",
-
-        headers: {
-            "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify(student)
-
-    })
-    .then(res => res.json())
-    .then(data => {
-
-        alert(data.message);
-        loadStudents();
-
-    });
+    send("/api/students/" + val("id"), "PUT", { name: val("name"), age: Number(val("age")), course: val("course") });
 }
 
-
-// Delete Student
 function deleteStudent(id) {
-
-    fetch("/api/students/" + id, {
-
-        method: "DELETE"
-
-    })
-    .then(res => res.json())
-    .then(data => {
-
-        alert(data.message);
-        loadStudents();
-
-    });
+    send("/api/students/" + id, "DELETE");
 }
 
-
-// Load students when page opens
 loadStudents();
-
